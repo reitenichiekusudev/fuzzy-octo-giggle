@@ -18,10 +18,10 @@ var downPressed = false;
 var map = []; // = new Array(ROWS);
 var player = {x:SIZE*2, y:SIZE*3, speed:10, 
               dX:0, dY:0, image:null};
-var uIval = setInterval(update, 33.34); // 30fps
+ // 30fps
 
 initGame();
-
+var uIval = setInterval(update, 33.34);
 function initGame()
 {
 	var pImage = new Image();
@@ -34,12 +34,12 @@ function initGame()
 
 function generateMap()
 {
-	for (var row = 0; row < ROWS; row++) // Run 6 times for each row
+	for (var row = 0; row < ROWS+1; row++) // Run 6 times for each row
 	{
 		map[row] = []; // = new Array(COLS+1);
-		for (var col = 0; col < COLS+1; col++) // Runs 9 times for each col
+		for (var col = 0; col < COLS; col++) // Runs 9 times for each col
 		{
-			var tempTile = { x:col*SIZE, y:row*SIZE, image:null };
+			var tempTile = { x:col*SIZE, y:(row-1)*SIZE, image:null };
 			tempTile.image = new Image();// Temp line.
 			tempTile.image.src = "../img/asteroids.png";
 			map[row][col] = tempTile;
@@ -119,38 +119,58 @@ function movePlayer()
 
 function scrollMap()
 {
-	if (map[0][0].y <= -100)
-	{
-		
-			map[map.length] = [];
+			//console.log(map.length);
+
+
+	
+
+if(map[map.length-1][0].y >= 600)
+		{
+			
+			//console.log(map[0][0].y);
+			
+			
+
 			//map.push(a);
-			console.log(map[map.length-1]);
-			var tempTile = { x:8*SIZE, y:row*SIZE, image:null };
+			var temparr = [];
+			
+			for(var p = 0; p< map[0].length; p++)
+			{
+
+				var tempTile = { x: p*SIZE, y:-1*SIZE, image:null };
+			
 			tempTile.image = new Image();// Temp line.
 			tempTile.image.src = "../img/Asteroids.png";
-			for(var p = 0; p< map[0].length; p++)
-			map[map.length-1].push(tempTile);
-		console.log(map[map.length-1]);
-			map.shift();
+			
+			temparr[p] = tempTile;
+			
+			}
+			map.unshift(temparr);
+			//console.log(map.length);
+			map.pop();
+
+		//console.log(map[map.length-1], map.length);
+		
+		
 		
 	}
-	for (var row = 0; row < map.length; row++)
+	for (var row = 0; row <map.length; row++)
 	{
 		for (var col = 0; col < map[0].length; col++)
 		{
-			map[row][col].y -= SCROLL;
+			map[row][col].y += SCROLL;
 		}
 	}
-
 }
 
 function render()
 {
-	console.log("here");
+	
 	surface.clearRect(0, 0, _canvas.width, _canvas.height); // x, y, w, h
 	// Render map...
 	for (var row = 0; row < map.length; row++)
 	{
+		//console.log(map.length);
 		for (var col = 0; col < map[0].length; col++)
 		{
 			if (map[row][col].image != null)
