@@ -18,7 +18,9 @@ var downPressed = false;
 var map = []; // = new Array(ROWS);
 var player = {x:SIZE*2, y:SIZE*3, speed:10, 
               dX:0, dY:0, image:null};
+var missile = {x: 51, y: 51, speed: 50, image:null};
  // 30fps
+
 
 initGame();
 var uIval = setInterval(update, 33.34);
@@ -173,7 +175,7 @@ function render()
 		//console.log(map.length);
 		for (var col = 0; col < map[0].length; col++)
 		{
-			if (map[row][col].image != null)
+			if (map[row][col].image !== null)
 				surface.drawImage(map[row][col].image,
 								  map[row][col].x,
 								  map[row][col].y);
