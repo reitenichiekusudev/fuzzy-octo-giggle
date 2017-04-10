@@ -20,7 +20,7 @@ var rightPressed = false;
 var upPressed = false;
 var downPressed = false;
 var missilefired = false;
-var spacePressed= false;
+var spacePressed = false;
 
 var map = []; // = new Array(ROWS);
 var bg = [];
@@ -32,6 +32,7 @@ var player = {x:SIZE*2, y:SIZE*3, speed:10,
 
 initGame();
 var uIval = setInterval(update, 33.34);
+
 function initGame()
 {
 	var pImage = new Image();
@@ -86,7 +87,7 @@ function onKeyDown(event)
 				downPressed = true;
 				break;
 		case 32: //space
-				if (spacePressed = false)
+				if (spacePressed == false)
 				spacePressed = true;
 				break;
 		default:
@@ -113,6 +114,7 @@ function onKeyUp(event)
 				break;
 		case 32: //space
 				spacePressed = false;
+
 				break;
 		default:
 				console.log("Unhandled key.");
@@ -127,7 +129,7 @@ function update() // Going to run 30fps
 	
 	if (spacePressed == true)
 	missileconstructor();
-	missilemover(missilearr);
+	missilemover();
 	// move enemies
 	// collision check
 	// animate sprites
@@ -149,17 +151,23 @@ function movePlayer()
 function missileconstructor()
 {
 	
-	
+	//
+	//{
 		var missile = {x: player.x+SIZE/2, y: player.y+30, speed: 30, image:null};
+		missile.image= new Image();
+		missile.image.src = "assets/missile.png";
 		missilearr.push(missile);
+	//}
 	
 }
-function missilemover(missile)
+function missilemover()
 {
-	for(var m = 0; m<missile.length; m++)
-	{
-		missile[m].y += missile[m].speed;
-	}
+	if(missilearr.length>0){
+	for(var m = 0; m<missilearr.length; m++)
+	
+		missilearr[m].y -= missilearr[m].speed;
+	
+}
 
 }
 
@@ -176,6 +184,13 @@ if(map[map.length-1][0].y >= 600)
 			tempTile.image = new Image();// Temp line.
 			if(rngg === 1)
 			tempTile.image.src = "assets/asteroids.png";
+			else if(rngg === 2)
+			{
+				var tempalien = { x: p*SIZE, y:-1*SIZE, image:null, name: "alien" };
+				tempalien.image = new Image();
+				tempalien.image.src = "assets/alien.png";
+				temparr[p] = tempalien;
+			}
 			else
 			tempTile.image.src = "assets/Blank.png";			
 			temparr[p] = tempTile;
@@ -211,6 +226,22 @@ if(bg[0].y >= 0)
 		for (var col = 0; col < map[0].length; col++)
 		{
 			map[row][col].y += SCROLL;
+			if (map[row][col].name =="alien")
+			{
+				var rngg2 = Math.floor((Math.random()*2)+1);
+				if(rngg2 === 1)
+				{
+					map[row][col].x += SCROLL;
+					map[row][col].y += SCROLL;
+				}
+				else 
+				{
+					map[row][col].x -= SCROLL;
+					map[row][col].y += SCROLL;
+				}
+			}
+
+
 		}
 	}
 	for (var l = 0; l< 3; l++)
@@ -245,5 +276,15 @@ function render()
 	
 	// Render player...
 	surface.drawImage(player.image,player.x-SIZE/2,player.y-SIZE/2);
+	if (missilearr.length >0)
+	{
+		for (var po = 0; po<missilearr.length; po++)
+		{
+			if (missilearr[po].image !== null)
+				surface.drawImage(missilearr[po].image, missilearr[po].x, missilearr[po].y);
+
+			
+		}
+	}
 }
 
