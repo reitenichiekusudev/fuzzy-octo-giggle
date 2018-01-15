@@ -1,0 +1,419 @@
+<html>
+
+<head>
+    <title>Sliders using jQueryUI</title>
+    <link href='Common/css/style.css' type='text/css' rel='stylesheet'>
+    <link href='Common/css/desert.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/jquery-ui.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/colorpicker.css' type='text/css' rel='stylesheet' />
+    <script type="text/javascript" src="Common/js/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/js/initShaders.js"></script>
+    <script type="text/javascript" src="Common/js/MV.js"></script>
+    <script type='text/javascript' src='Common/js/jquery-3.2.1.min.js'></script>
+    <script type='text/javascript' src='Common/js/jquery-ui.min.js'></script>
+    <script type='text/javascript' src='Common/js/prettify.js'></script>
+    <script type='text/javascript' src='Common/js/utils.js'></script>
+    <script type='text/javascript' src='Common/js/colorpicker.js'></script>
+    <script type='text/javascript' src='Common/js/codeview.js'></script>
+    <script id="code-js" type="text/javascript">
+
+            "use strict";
+
+            var gl;
+            var index = 0;
+            var nRows = 50;
+            var nColumns = 50;
+
+            var pointsArray = [];
+
+            var fColor;
+
+            var near = -10;
+            var far = 10;
+            var radius = 6.0;
+            var theta = 1.30;
+            var phi = 1.74;
+            var dr = 5.0 * Math.PI / 180.0;
+            var left = -2.0;
+            var right = 2.0;
+            var ytop = 2.0;
+            var bottom = -2.0;
+
+
+            window.onload = function init() {
+                var canvas = document.getElementById("gl-canvas");
+
+                gl = WebGLUtils.setupWebGL(canvas);
+                if (!gl) { alert("WebGL isn't available"); }
+            };
+    </script>
+</head>
+
+<body>
+    <div id='top'>
+        <h2>Mesh Example</h2>
+        <p>Displaying Meshes as surface.</p>
+
+    </div>
+    <div id='contents'>
+        <div id='canvasContainer'>
+
+            <canvas id="gl-canvas" width="512" height="512">
+                Oops ... your browser doesn't support the HTML5 canvas element
+            </canvas>
+        </div>
+
+    </div>
+    <div id='bottom'>
+        <table>
+            <tr>
+                <td><button id="increaseZ-btn">Increase Z</button></td>
+                <td><button id="decreaseZ-btn">Decrease Z</button></td>
+                <td><button id="increaseR-btn">Increase R</button></td>
+                <td><button id="decreaseR-btn">Decrease R</button></td>
+                <td with="50px">
+                    <label for="near">Near</label>
+                    <input type="text" id="near" name="near">
+                    <label for="far">Far</label>
+                    <input type="text" id="far" name="far">
+                    <label for="radius">Radius</label>
+                    <input type="text" id="radius" name="radius">
+                </td>
+            </tr>
+            <tr>
+                <td><button id='increasetheta-btn'>Increase Theta</button></td>
+                <td><button id='decreasetheta-btn'>Decrease Theta</button></td>
+                <td><button id='increasephi-btn'>Increase Phi</button></td>
+                <td><button id='decreasephi-btn'>Decrease Phi</button></td>
+                <td with="50px">
+                    <label for="theta">Theta</label>
+                    <input type="text" id="theta" name="theta">
+                    <label for="phi">Phi</label>
+                    <input type="text" id="phi" name="phi">
+                    <label for="ytop">Top</label>
+                    <input type="text" id="ytop" name="ytop">
+                </td>
+            </tr>
+            <tr>
+                <td><button id="wider-btn">Wider</button></td>
+                <td><button id="narrower-btn">Narrower</button></td>
+                <td><button id="higher-btn">Higher</button></td>
+                <td><button id="shorter-btn">Shorter</button></td>
+                <td with="50px">
+                    <label for="left">Left</label>
+                    <input type="text" id="left" name="left">
+                    <label for="right">Right</label>
+                    <input type="text" id="right" name="right">
+                    <label for="ybottom">Bottom</label>
+                    <input type="text" id="ybottom" name="ybottom">
+                </td>
+            </tr>
+        </table>
+        <table style='padding:0px'>
+            <tr>
+                <td align='right'>Light Color (Light Diffuse Term):</td>
+                <td colspan='2'><div id='colorSelectorLight' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
+                <td>Sphere Color (Material Diffuse Term):</td>
+                <td colspan='2'><div id='colorSelectorSphere' class='colorSelector'><div style='background-color:rgb(46,99,191)'></div></div></td>
+            </tr>
+            <tr>
+                <td align='right'>Light Ambient Term:</td>
+                <td id='slider-la-value' width='30px'>0.03</td>
+                <td><div id='slider-la' /></td>
+                <td>Material Ambient Term:</td>
+                <td id='slider-ma-value' width='30px'>1.0</td>
+                <td colspan='3'><div id='slider-ma' /></td>
+            </tr>
+
+            <tr>
+                <td align='right'>Light Specular Term:</td>
+                <td id='slider-ls-value' width='30px'>1.0</td>
+                <td><div id='slider-ls' /></td>
+                <td>Material Specular Term:</td>
+                <td id='slider-ms-value' width='30px'>1.0</td>
+                <td colspan='3'><div id='slider-ms' /></td>
+            </tr>
+            <tr>
+
+                <td align='right'>X:</td>
+                <td id='slider-x-value' width='30px' align='center'>-0.25</td>
+                <td width='150px'><div id='slider-x' /></td>
+
+                <td>Shininess:</td>
+                <td id='slider-s-value' width='30px'>10.0</td>
+                <td width='150px'><div id='slider-s' /></td>
+            </tr>
+            <tr>
+                <td align='right'>Y:</td>
+                <td id='slider-y-value' width='30px' align='center'>-0.25</td>
+                <td width='150px'><div id='slider-y' /></td>
+                <td>Background Color (gl.clearColor):</td>
+                <td colspan='2'><div id='colorSelectorBg' class='colorSelector'><div style='background-color:rgb(77,77,77)'></div></div></td>
+            </tr>
+            <tr>
+                <td align='right'>Z:</td>
+                <td id='slider-z-value' width='30px' align='center'>-0.25</td>
+                <td width='150px'><div id='slider-z' /></td>
+
+            </tr>
+        </table> 
+    </div>
+    <script>cview.run();</script>
+
+    <script>
+        $('#near').val(near);
+        $('#far').val(far);
+        $('#radius').val(radius);
+        $('#theta').val(theta);
+        $('#phi').val(phi);
+        $('#left').val(left);
+        $('#right').val(right);
+        $('#ytop').val(ytop);
+        $('#ybottom').val(bottom);
+
+        $("#near").on("change paste keyup", function () {
+            near = $(this).val();
+        });
+        $("#far").on("change paste keyup", function () {
+            far = $(this).val();
+        });
+        $("#left").on("change paste keyup", function () {
+            left = $(this).val();
+        });
+        $("#right").on("change paste keyup", function () {
+            right = $(this).val();
+        });
+        $("#ytop").on("change paste keyup", function () {
+            ytop = $(this).val();
+        });
+        $("#ybottom").on("change paste keyup", function () {
+            ybottom = $(this).val();
+        });
+        $("#radius").on("change paste keyup", function () {
+            radius = $(this).val();
+        });
+        $("#theta").on("change paste keyup", function () {
+            theta = $(this).val();
+        });
+        $("#phi").on("change paste keyup", function () {
+            phi = $(this).val();
+        });
+
+        $('#increaseZ-btn').button();
+        $('#increaseZ-btn').click(
+            function () { near *= 1.1; far *= 1.1; $('#near').val(near); $('#far').val(far); });
+
+        $('#decreaseZ-btn').button();
+        $('#decreaseZ-btn').click(
+            function () { near *= 0.9; far *= 0.9; $('#near').val(near); $('#far').val(far); });
+
+        $('#increaseR-btn').button();
+        $('#increaseR-btn').click(
+            function () { radius *= 2.0; $('#radius').val(radius); });
+
+        $('#decreaseR-btn').button();
+        $('#decreaseR-btn').click(
+            function () { radius *= 0.5; $('#radius').val(radius); });
+
+        $('#increasetheta-btn').button();
+        $('#increasetheta-btn').click(
+            function () {
+                theta += dr; $('#theta').val(theta);
+            });
+
+        $('#decreasetheta-btn').button();
+        $('#decreasetheta-btn').click(
+            function () {
+                theta -= dr; $('#theta').val(theta);
+            });
+
+        $('#increasephi-btn').button();
+        $('#increasephi-btn').click(
+            function () {
+                phi += dr; $('#phi').val(phi);
+            });
+
+
+        $('#decreasephi-btn').button();
+        $('#decreasephi-btn').click(
+            function () {
+                phi -= dr; $('#phi').val(phi);
+            });
+
+        $('#wider-btn').button();
+        $('#wider-btn').click(
+            function () {
+                left *= 1.1; right *= 1.1; $('#left').val(left); $('#right').val(right);
+            });
+
+        $('#narrower-btn').button();
+        $('#narrower-btn').click(
+            function () {
+                left *= 0.9; right *= 0.9; $('#left').val(left); $('#right').val(right);
+            });
+
+        $('#higher-btn').button();
+        $('#higher-btn').click(
+            function () {
+                ytop *= 1.1; bottom *= 1.1; $('#ytop').val(ytop); $('#ybottom').val(bottom);
+            });
+
+        $('#shorter-btn').button();
+        $('#shorter-btn').click(
+            function () {
+                ytop *= 0.9; bottom *= 0.9; $('#ytop').val(ytop); $('#ybottom').val(bottom);
+            });
+
+        function updateShininess() {
+            var v = $('#slider-s').slider("value");
+
+            //gl.uniform1f(prg.uShininess, v);
+            $('#slider-s-value').html(v);
+        }
+
+        $('#slider-s').slider({ value: 10.0, min: 0, max: 40, step: 1, slide: updateShininess });
+
+        function updateLightAmbientTerm() {
+            var la = $('#slider-la').slider("value");
+            //gl.uniform4fv(prg.uLightAmbient, [0.0, la, 0.0, 1.0]);
+            $('#slider-la-value').html(la);
+        }
+
+        function updateLightDiffuseTerm() {
+            var ld = $('#slider-ld').slider("value");
+           // gl.uniform4fv(prg.uLightDiffuse, [ld, ld, ld, 1.0]);
+            $('#slider-ld-value').html(ld);
+        }
+
+        function updateLightSpecularTerm() {
+            var ls = $('#slider-ls').slider("value");
+            //gl.uniform4fv(prg.uLightSpecular, [ls, ls, ls, 1.0]);
+            $('#slider-ls-value').html(ls);
+        }
+
+
+        function updateMaterialAmbientTerm() {
+            var ma = $('#slider-ma').slider("value");
+            //gl.uniform4fv(prg.uMaterialAmbient, [ma, ma, ma, 1.0]);
+            $('#slider-ma-value').html(ma);
+        }
+
+        function updateMaterialSpecularTerm() {
+            var ms = $('#slider-ms').slider("value");
+            //gl.uniform4fv(prg.uMaterialSpecular, [ms, ms, ms, 1.0]);
+            $('#slider-ms-value').html(ms);
+        }
+
+        $('#slider-la').slider({ value: 0.03, min: -0.01, max: 1.0, step: 0.01, slide: updateLightAmbientTerm });
+        $('#slider-ld').slider({ value: 0.35, min: -0.01, max: 1.0, step: 0.01, slide: updateLightDiffuseTerm });
+        $('#slider-ls').slider({ value: 1.0, min: -0.01, max: 1.0, step: 0.01, slide: updateLightSpecularTerm });
+
+        $('#slider-ma').slider({ value: 1.0, min: -0.2, max: 1.2, step: 0.1, slide: updateMaterialAmbientTerm });
+        $('#slider-ms').slider({ value: 1.0, min: -0.01, max: 1.2, step: 0.1, slide: updateMaterialSpecularTerm });
+
+        function updateLightDirection() {
+            var x = $('#slider-x').slider("value");
+            var y = $('#slider-y').slider("value");
+            var z = $('#slider-z').slider("value");
+            //gl.uniform3fv(prg.uLightDirection, [x, y, z]);
+            $('#slider-x-value').html(x);
+            $('#slider-y-value').html(y);
+            $('#slider-z-value').html(z);
+        }
+
+        $('#slider-x').slider({ value: -0.25, min: -1.05, max: 1.05, step: 0.01, slide: updateLightDirection });
+        $('#slider-y').slider({ value: -0.25, min: -1.05, max: 1.05, step: 0.01, slide: updateLightDirection });
+        $('#slider-z').slider({ value: -0.25, min: -1.05, max: 1.05, step: 0.01, slide: updateLightDirection });
+
+        function updateObjectColor(r, g, b) {
+            //gl.uniform4fv(prg.uMaterialDiffuse, [r, g, b, 1.0]);
+        }
+
+        function updateLightColor(r, g, b) {
+            //gl.uniform4fv(prg.uLightDiffuse, [r, g, b, 1.0]);
+        }
+
+        function updateClearColor(r, g, b) {
+            clearColor = [r, g, b, 1.0];
+        }
+
+
+        $('#colorSelectorSphere').ColorPicker({
+            onSubmit: function (hsb, hex, rgb, el) {
+                $(el).val(hex);
+                $(el).ColorPickerHide();
+
+            },
+            color: '#00ff00',
+            onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+                return false;
+            },
+            onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+                return false;
+            },
+            onChange: function (hsb, hex, rgb) {
+                $('#colorSelectorSphere div').css('backgroundColor', '#' + hex);
+                updateObjectColor(rgb.r / 256, rgb.g / 256, rgb.b / 256);
+            },
+
+            onBeforeShow: function (colpkr) {
+                $(colpkr).ColorPickerSetColor('rgb(0.5,0.8,0.1)');
+            }
+        })
+
+
+        $('#colorSelectorLight').ColorPicker({
+            onSubmit: function (hsb, hex, rgb, el) {
+                $(el).val(hex);
+                $(el).ColorPickerHide();
+
+            },
+            color: '#00ff00',
+            onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+                return false;
+            },
+            onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+                return false;
+            },
+            onChange: function (hsb, hex, rgb) {
+                $('#colorSelectorLight div').css('backgroundColor', '#' + hex);
+                updateLightColor(rgb.r / 256, rgb.g / 256, rgb.b / 256);
+            },
+
+            onBeforeShow: function (colpkr) {
+                $(colpkr).ColorPickerSetColor('rgb(0.5,0.8,0.1)');
+            }
+        })
+
+        $('#colorSelectorBg').ColorPicker({
+            onSubmit: function (hsb, hex, rgb, el) {
+                $(el).val(hex);
+                $(el).ColorPickerHide();
+
+            },
+            color: '#00ff00',
+            onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+                return false;
+            },
+            onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+                return false;
+            },
+            onChange: function (hsb, hex, rgb) {
+                $('#colorSelectorBg div').css('backgroundColor', '#' + hex);
+                updateClearColor(rgb.r / 256, rgb.g / 256, rgb.b / 256);
+            },
+
+            onBeforeShow: function (colpkr) {
+                $(this).ColorPickerSetColor('rgb(0.5,0.8,0.1)');
+            }
+        })
+
+    </script>
+</body>
+</html>

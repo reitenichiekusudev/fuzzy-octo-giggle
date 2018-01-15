@@ -1,0 +1,344 @@
+
+<html>
+<head>
+    <link href='Common/css/style.css' type='text/css' rel='stylesheet'>
+    <link href='Common/css/desert.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/jquery-ui.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/colorpicker.css' type='text/css' rel='stylesheet' />
+    <script type="text/javascript" src="Common/js/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/js/initShaders.js"></script>
+    <script type="text/javascript" src="Common/js/MV.js"></script>
+    <script type='text/javascript' src='Common/js/jquery-3.2.1.min.js'></script>
+    <script type='text/javascript' src='Common/js/jquery-ui.min.js'></script>
+    <script type='text/javascript' src='Common/js/prettify.js'></script>
+    <script type='text/javascript' src='Common/js/utils.js'></script>
+    <script type='text/javascript' src='Common/js/colorpicker.js'></script>
+    <script type='text/javascript' src='Common/js/codeview.js'></script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+        attribute  vec4 vPosition;
+
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+
+        void main()
+        {
+        gl_Position = projectionMatrix*modelViewMatrix*vPosition;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+
+        precision mediump float;
+
+        uniform vec4 fColor;
+
+        void
+        main()
+        {
+        gl_FragColor = fColor;
+        }
+    </script>
+
+    <script id="code-js" type="text/javascript">
+
+        "use strict";
+
+        var gl;
+
+        var nRows = 50;
+        var nColumns = 50;
+
+        // data for radial hat function: sin(Pi*r)/(Pi*r)
+
+        var data = [];
+        for (var i = 0; i < nRows; ++i) {
+            data.push([]);
+            var x = Math.PI * (4 * i / nRows - 2.0);
+
+            for (var j = 0; j < nColumns; ++j) {
+                var y = Math.PI * (4 * j / nRows - 2.0);
+                var r = Math.sqrt(x * x + y * y);
+
+                // take care of 0/0 for r = 0
+
+                data[i][j] = r ? Math.sin(r) / r : 1.0;
+            }
+        }
+
+        var pointsArray = [];
+
+        var fColor;
+
+        var near = -10;
+        var far = 10;
+        var radius = 6.0;
+        var theta = 0.0;
+        var phi = 0.0;
+        var dr = 5.0 * Math.PI / 180.0;
+
+        const black = vec4(0.0, 0.0, 0.0, 1.0);
+        const red = vec4(1.0, 0.0, 0.0, 1.0);
+        const white = vec4(1.0, 1.0, 1.0, 1.0);
+
+        const at = vec3(0.0, 0.0, 0.0);
+        const up = vec3(0.0, 1.0, 0.0);
+
+        var left = -2.0;
+        var right = 2.0;
+        var ytop = 2.0;
+        var bottom = -2.0;
+
+        var modeViewMatrix, projectionMatrix;
+        var modelViewMatrixLoc, projectionMatrixLoc;
+
+        window.onload = function init() {
+            var canvas = document.getElementById("gl-canvas");
+
+            gl = WebGLUtils.setupWebGL(canvas);
+            if (!gl) { alert("WebGL isn't available"); }
+
+            gl.viewport(0, 0, canvas.width, canvas.height);
+
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+
+            // enable depth testing and polygon offset
+            // so lines will be in front of filled triangles
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.LEQUAL);
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.polygonOffset(1.0, 2.0);
+
+            // vertex array of nRows*nColumns quadrilaterals
+            // (two triangles/quad) from data
+
+            for (var i = 0; i < nRows - 1; i++) {
+                for (var j = 0; j < nColumns - 1; j++) {
+                    pointsArray.push(vec4(2 * i / nRows - 1, data[i][j], 2 * j / nColumns - 1, 1.0));
+                    pointsArray.push(vec4(2 * (i + 1) / nRows - 1, data[i + 1][j], 2 * j / nColumns - 1, 1.0));
+                    pointsArray.push(vec4(2 * (i + 1) / nRows - 1, data[i + 1][j + 1], 2 * (j + 1) / nColumns - 1, 1.0));
+                    pointsArray.push(vec4(2 * i / nRows - 1, data[i][j + 1], 2 * (j + 1) / nColumns - 1, 1.0));
+                }
+            }
+            //
+            //  Load shaders and initialize attribute buffers
+            //
+            var program = initShaders(gl, "vertex-shader", "fragment-shader");
+            gl.useProgram(program);
+
+
+            var vBufferId = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vBufferId);
+            gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
+
+            var vPosition = gl.getAttribLocation(program, "vPosition");
+            gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vPosition);
+
+            fColor = gl.getUniformLocation(program, "fColor");
+
+            modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
+            projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
+
+            // buttons for moving viewer and changing size
+            $('#near').val(near);
+            $('#far').val(far);
+            $('#radius').val(radius);
+            $('#theta').val(theta);
+            $('#phi').val(phi);
+            $('#left').val(left);
+            $('#right').val(right);
+            $('#ytop').val(ytop);
+            $('#ybottom').val(bottom);
+
+            $("#near").on("change paste keyup", function () {
+                near = $(this).val();
+            });
+            $("#far").on("change paste keyup", function () {
+                far = $(this).val();
+            });
+            $("#left").on("change paste keyup", function () {
+                left = $(this).val();
+            });
+            $("#right").on("change paste keyup", function () {
+                right = $(this).val();
+            });
+            $("#ytop").on("change paste keyup", function () {
+                ytop = $(this).val();
+            });
+            $("#ybottom").on("change paste keyup", function () {
+                ybottom = $(this).val();
+            });
+            $("#radius").on("change paste keyup", function () {
+                radius = $(this).val();
+            });
+            $("#theta").on("change paste keyup", function () {
+                theta = $(this).val();
+            });
+            $("#phi").on("change paste keyup", function () {
+                phi = $(this).val();
+            });
+
+            $('#increaseZ-btn').button();
+            $('#increaseZ-btn').click(
+                function () { near *= 1.1; far *= 1.1; $('#near').val(near); $('#far').val(far); });
+
+            $('#decreaseZ-btn').button();
+            $('#decreaseZ-btn').click(
+                function () { near *= 0.9; far *= 0.9; $('#near').val(near); $('#far').val(far); });
+
+            $('#increaseR-btn').button();
+            $('#increaseR-btn').click(
+                function () { radius *= 2.0; $('#radius').val(radius); });
+
+            $('#decreaseR-btn').button();
+            $('#decreaseR-btn').click(
+                function () { radius *= 0.5; $('#radius').val(radius); });
+
+            $('#increasetheta-btn').button();
+            $('#increasetheta-btn').click(
+                function () {
+                    theta += dr; $('#theta').val(theta);
+                });
+
+            $('#decreasetheta-btn').button();
+            $('#decreasetheta-btn').click(
+                function () {
+                    theta -= dr; $('#theta').val(theta);
+                });
+
+            $('#increasephi-btn').button();
+            $('#increasephi-btn').click(
+                function () {
+                    phi += dr; $('#phi').val(phi);
+                });
+
+
+            $('#decreasephi-btn').button();
+            $('#decreasephi-btn').click(
+                function () {
+                    phi -= dr; $('#phi').val(phi);
+                });
+
+            $('#wider-btn').button();
+            $('#wider-btn').click(
+                function () {
+                    left *= 1.1; right *= 1.1; $('#left').val(left); $('#right').val(right);
+                });
+
+            $('#narrower-btn').button();
+            $('#narrower-btn').click(
+                function () {
+                    left *= 0.9; right *= 0.9; $('#left').val(left); $('#right').val(right);
+                });
+
+            $('#higher-btn').button();
+            $('#higher-btn').click(
+                function () {
+                    ytop *= 1.1; bottom *= 1.1; $('#ytop').val(ytop); $('#ybottom').val(bottom);
+                });
+
+            $('#shorter-btn').button();
+            $('#shorter-btn').click(
+                function () {
+                    ytop *= 0.9; bottom *= 0.9; $('#ytop').val(ytop); $('#ybottom').val(bottom);
+                });
+            render();
+        }
+
+
+        function render() {
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            var eye = vec3(radius * Math.sin(theta) * Math.cos(phi),
+                radius * Math.sin(theta) * Math.sin(phi),
+                radius * Math.cos(theta));
+
+            var modelViewMatrix = lookAt(eye, at, up);
+            var projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+
+            gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+            gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+
+            // draw each quad as two filled red triangles
+            // and then as two black line loops
+
+            for (var i = 0; i < pointsArray.length; i += 4) {
+                gl.uniform4fv(fColor, flatten(red));
+                gl.drawArrays(gl.TRIANGLE_FAN, i, 4);
+                gl.uniform4fv(fColor, flatten(black));
+                gl.drawArrays(gl.LINE_LOOP, i, 4);
+            }
+            requestAnimFrame(render);
+        }
+    </script>
+</head>
+<body>
+    <div id='top'>
+        <h2>Sombrero</h2>
+        <p>
+            Draw each quad as two filled red triangles and then as two black line loops
+        </p>
+      
+    </div>
+    <div id='contents'>
+        <div id='canvasContainer'>
+
+            <canvas id="gl-canvas" width="512" height="512">
+                Oops ... your browser doesn't support the HTML5 canvas element
+            </canvas>
+        </div>
+
+    </div>
+    <div id="bottom">
+        <table>
+            <tr>
+                <td><button id="increaseZ-btn">Increase Z</button></td>
+                <td><button id="decreaseZ-btn">Decrease Z</button></td>
+                <td><button id="increaseR-btn">Increase R</button></td>
+                <td><button id="decreaseR-btn">Decrease R</button></td>
+                <td with="50px">
+                    <label for="near">Near</label>
+                    <input type="text" id="near" name="near">
+                    <label for="far">Far</label>
+                    <input type="text" id="far" name="far">
+                    <label for="radius">Radius</label>
+                    <input type="text" id="radius" name="radius">
+                </td>
+            </tr>
+            <tr>
+                <td><button id='increasetheta-btn'>Increase Theta</button></td>
+                <td><button id='decreasetheta-btn'>Decrease Theta</button></td>
+                <td><button id='increasephi-btn'>Increase Phi</button></td>
+                <td><button id='decreasephi-btn'>Decrease Phi</button></td>
+                <td with="50px">
+                    <label for="theta">Theta</label>
+                    <input type="text" id="theta" name="theta">
+                    <label for="phi">Phi</label>
+                    <input type="text" id="phi" name="phi">
+                    <label for="ytop">Top</label>
+                    <input type="text" id="ytop" name="ytop">
+                </td>
+            </tr>
+            <tr>
+                <td><button id="wider-btn">Wider</button></td>
+                <td><button id="narrower-btn">Narrower</button></td>
+                <td><button id="higher-btn">Higher</button></td>
+                <td><button id="shorter-btn">Shorter</button></td>
+                <td with="50px">
+                    <label for="left">Left</label>
+                    <input type="text" id="left" name="left">
+                    <label for="right">Right</label>
+                    <input type="text" id="right" name="right">
+                    <label for="ybottom">Bottom</label>
+                    <input type="text" id="ybottom" name="ybottom">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>cview.run();</script>
+</body>
+</html>

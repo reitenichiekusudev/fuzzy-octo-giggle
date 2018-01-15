@@ -1,0 +1,46 @@
+<html>
+
+<head>
+    <title>What is jQuery</title>
+    <link href='Common/css/style.css' type='text/css' rel='stylesheet'>
+    <link href='Common/css/desert.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/jquery-ui.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/colorpicker.css' type='text/css' rel='stylesheet' />
+    <script type="text/javascript" src="Common/js/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/js/initShaders.js"></script>
+    <script type="text/javascript" src="Common/js/MV.js"></script>
+    <script type='text/javascript' src='Common/js/jquery-3.2.1.min.js'></script>
+    <script type='text/javascript' src='Common/js/jquery-ui.min.js'></script>
+    <script type='text/javascript' src='Common/js/prettify.js'></script>
+    <script type='text/javascript' src='Common/js/utils.js'></script>
+    <script type='text/javascript' src='Common/js/colorpicker.js'></script>
+    <script type='text/javascript' src='Common/js/codeview.js'></script>
+</head>
+
+<body>
+    <div id="header">
+        <h2>Getting started</h2>
+    </div>
+
+    <div id="demo">
+        Test jQuery
+    </div>
+
+    <script type='text/javascript'>
+        "user strict"
+        //wait for the HTML document to be fully loaded
+        //$(document).ready(function () {
+
+        //}
+        //);
+
+        //this is handy short cut
+        $(function () {
+            $("p").hide(); //hides all <p> elements
+            $(".demo").hide(); //hides all elements with class="demo"
+            $("#demo").hide(); //hides the element with id="demo"
+        });
+
+    </script>
+</body>
+</html>

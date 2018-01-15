@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Matrices - Matrix Operation</title>
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_PointSize = 10.0;
+        gl_Position = vPosition;
+        varColor = vColor;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_FragColor = varColor;
+        }
+    </script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MVnew.js"></script>
+    <script type="text/javascript" src="Common/webgl-debug.js"></script>
+    <script type="text/javascript" src="week5-0-geometry3.js"></script>
+</head>
+<body>
+    <div id="overlay">
+       A Matrix is composed of several rows and columns of numbers. The numbers in the matrix called the eloementsw of matrix. A matrix of m rows and n columns is said to be of dimension m x n. An identify matrix is a squaer matrix that contains ones in the diagonal and zeros everywhere else.
+
+    </div>
+    <canvas id="text" width="400" height="500"></canvas>
+    <canvas id="gl-canvas" width="400" height="500">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+
+</body>
+</html>

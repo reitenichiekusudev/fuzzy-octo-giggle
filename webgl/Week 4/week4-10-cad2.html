@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>CAD - Polygon drawing</title>
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+
+        varying vec4 fColor;
+
+
+        void
+        main()
+        {
+        gl_Position = vPosition;
+        fColor = vColor;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec4 fColor;
+        void
+        main()
+        {
+        gl_FragColor = fColor;
+        }
+    </script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MV.js"></script>
+    <script type="text/javascript" src="Common/webgl-debug.js"></script>
+    <script type="text/javascript" src="week4-10-cad2.js"></script>
+</head>
+<body>
+    <canvas id="gl-canvas" width="512" " height="300">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    <div id="overlay">
+        cad2: Polygon drawing. Each mouse click adds a vertex. End a polygon with button click.
+    </div>
+    <div>
+        <select id="mymenu" size="7">
+            <option value="0">Black</option>
+            <option value="1">Red</option>
+            <option value="2">Yellow</option>
+            <option value="3">Green</option>
+            <option value="4">Blue</option>
+            <option value="5">Magenta</option>
+            <option value="6">Cyan</option>
+        </select>
+        <button id="Button1">End Polygon</button>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<html>
+
+<head>
+    <title>Color Picker</title>
+    <meta http-equiv='content-type' content='text/html; charset=ISO-8859-1'>
+    <link href='Common/css/styles.css' type='text/css' rel='stylesheet'>
+    <link href='Common/css/jquery-ui.min.css' type='text/css' rel='stylesheet' />
+    <link href='Common/css/colorpicker.css' type='text/css' rel='stylesheet' />
+    <!-- GUI Libraries //-->
+    <script type='text/javascript' src='Common/js/jquery-3.2.1.min.js'></script>
+    <script type='text/javascript' src='Common/js/jquery-ui.min.js'></script>
+    <script type='text/javascript' src='Common/js/colorpicker.js'></script>
+
+</head>
+
+<body>
+    <div id="header">
+        <h2>Customize your Color</h2>
+    </div>
+
+    <div id="nav">
+        <table width='20' cellspacing='0'>
+            <tr>
+                <td>Car Color:</td>
+                <td><div id='carColor' class='colorSelector'><div style='background-color:rgb(255,255,255)'></div></div></td>
+            </tr>
+        </table>
+    </div>
+
+    <script type='text/javascript'>
+        var carColorHex = '#ffffff';
+        $('#carColor').ColorPicker({
+            onSubmit: function (hsb, hex, rgb, el) {
+                $(el).val(hex);
+                $(el).ColorPickerHide();
+
+            },
+            color: '#00ff00',
+            onShow: function (colpkr) {
+                $(colpkr).fadeIn(500);
+                return false;
+            },
+            onHide: function (colpkr) {
+                $(colpkr).fadeOut(500);
+                return false;
+            },
+            onChange: function (hsb, hex, rgb) {
+                carColorHex = hex;
+                $('#carColor div').css('backgroundColor', '#' + hex);
+                //  updateColorSelectedCar([rgb.r/256,rgb.g/256,rgb.b/256]);
+            },
+
+            onBeforeShow: function (colpkr) {
+                //  $(colpkr).ColorPickerSetColor(carColor);
+            }
+        });
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transformation</title>
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_PointSize = 10.0;
+        gl_Position = vPosition;
+        varColor = vColor;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_FragColor = varColor;
+        }
+    </script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MVnew.js"></script>
+    <script type="text/javascript" src="Common/webgl-debug.js"></script>
+    <script type="text/javascript" src="week5-0-transformation-complete.js"></script>
+</head>
+<body>
+    <div id="overlay">
+
+        Translation means that you move every point by a constant offset. Translatio matrix is as follows:
+        T(x,y,z) =
+        [1   0   0   x
+        0   1   0   y
+        0   0   1   z
+        0   0   0   1]
+        if P = [Px Py Pz], then Q= T*P = [Px+x Py+y Pz+z 1]
+        Q is a new point that is translated by the vector (x,y,z)
+        <button id="Translate">Translate</button>
+    </div>
+    <div id="overlay">
+        A rotation matrix rotates a point or a vector by a given angle around a given axis that passes through the origin.
+        Rx(theta) =
+        [1   0            0             0
+        0   cos(theta)   -sin(theta)    0
+        0   sin(theta)    cos(theta)    0
+        0   0             0             1]
+        <button id="Rotate">Rotate</button>
+    </div>
+    <div id="overlay">
+        Scaling is used to enlarge or diminish an object. The following scaling matrix scales objects with a factor x along the x-direction, y along y-direction, and z along z-direction.
+        S(x,y,z) =
+        [x   0   0    0
+        0    y   0    0
+        0    0   z    0
+        0    0   0    1]
+        <button id="Scaling">Scale</button>
+    </div>
+    <div id="overlay">
+        Shearing is an ffine transformation that helps you with distoring the scene. The x-coordinate is sheared to the right when the y-coordinate is increased.
+        Hxy(s) =
+        [1   s   0    0
+        0    1   0    0
+        0    0   1    0
+        0    0   0    1]
+        if P = [Px Py Pz], then Q= Hxy*P = [Px+s*Py Py  Pz 1]
+        <button id="Shearing">Shear</button>
+    </div>
+    <canvas id="gl-canvas" width="500" height="300">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    <canvas id="text" width="500" height="300"></canvas>
+</body>
+</html>

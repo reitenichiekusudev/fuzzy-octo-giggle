@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Rotating Square</title>
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        uniform float theta;
+
+        void
+        main()
+        {
+        float s = sin( theta );
+        float c = cos( theta );
+
+        gl_Position.x = -s * vPosition.y + c * vPosition.x;
+        gl_Position.y =  s * vPosition.x + c * vPosition.y;
+        gl_Position.z = 0.0;
+        gl_Position.w = 1.0;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        void
+        main()
+        {
+        gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+        }
+    </script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MV.js"></script>
+    <script type="text/javascript" src="Common/webgl-debug.js"></script>
+    <script type="text/javascript" src="week4-2-rotatingSquare0.js"></script>
+</head>
+<body>
+    <div id="overlay">
+        <div>Time: <span id="time"></span></div>
+        <div>
+            Consider the two-dimensional-point: x=cos(t) y=sin(t). This point lies on a unit circle regardless of the value of t. The three points (-sin(t),cos(t)), (-cos(t),-sin(t)), (sin(t), -cos(t)) also lie on a unit circle and form a square at the origin whose sides are of the sqaure root of 2. When t=0, four vertices are (0, 1), (1, 0), (-1, 0), and (0, -1)
+            One way to generate a buffer swap and to control the rate at which the display is repainted is to use the setInterval or setTimeout. setInterval(render, 16) will call render() function every 16 milliseconds or about 60 times per second.
+        </div>
+    </div>
+    <canvas id="gl-canvas" width="512" height="512">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+</body>
+</html>

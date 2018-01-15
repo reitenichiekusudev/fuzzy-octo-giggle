@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Vectors Operation- addition</title>
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_PointSize = 10.0;
+        gl_Position = vPosition;
+        varColor = vColor;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 varColor;
+        void
+        main()
+        {
+        gl_FragColor = varColor;
+        }
+    </script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MV.js"></script>
+    <script type="text/javascript" src="Common/webgl-debug.js"></script>
+    <script type="text/javascript" src="week5-0-geometry0.js"></script>
+</head>
+<body>
+    <div id="overlay">
+        The sum of any two vectors is a vector: w = u + v = (ux + vx , uy + vy , uz + vz )
+    </div>
+    <canvas id="text" width="300" height="300"></canvas>
+    <canvas id="gl-canvas" width="300" height="300">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+
+</body>
+</html>

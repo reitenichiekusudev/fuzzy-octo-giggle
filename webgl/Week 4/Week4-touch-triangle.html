@@ -1,0 +1,231 @@
+﻿<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Create a triangle</title>
+    <meta charset="utf-8">
+    <style>
+        #overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            border-radius: 1em;
+            border: 1px solid #f00;
+            text-shadow: 0px 0px 1px white;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+
+        varying vec4 fColor;
+
+        void
+        main()
+        {
+        gl_Position = vPosition;
+        fColor = vColor;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+
+        precision mediump float;
+
+        varying vec4 fColor;
+        void
+        main()
+        {
+        gl_FragColor = fColor;
+        }
+    </script>
+    <script type="text/javascript">
+        var canvas;
+        var gl;
+
+
+        var maxNumTriangles = 200;
+        var maxNumVertices = 3 * maxNumTriangles;
+        var index = 0;
+
+        var colors = [
+
+            [0.0, 0.0, 0.0, 1.0],  // black
+            [1.0, 0.0, 0.0, 1.0],  // red
+            [1.0, 1.0, 0.0, 1.0],  // yellow
+            [0.0, 1.0, 0.0, 1.0],  // green
+            [0.0, 0.0, 1.0, 1.0],  // blue
+            [1.0, 0.0, 1.0, 1.0],  // magenta
+            [0.0, 1.0, 1.0, 1.0]   // cyan
+        ];
+
+        window.onload = function init() {
+
+            canvas = document.getElementById("gl-canvas");
+
+            gl = createGLContext(canvas);
+
+            if (!gl) { alert("WebGL isn't available"); }
+
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.clearColor(0.8, 0.8, 0.8, 1.0);
+
+            //  Load shaders and initialize attribute buffers
+            setupBufferShader();
+            render();
+        }
+
+
+        //  Load shaders and initialize attribute buffers
+        function setupBufferShader() {
+            var program = initShaders(gl, "vertex-shader", "fragment-shader");
+            gl.useProgram(program);
+
+
+            var vBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, 8 * maxNumVertices, gl.STATIC_DRAW);
+
+            var vPosition = gl.getAttribLocation(program, "vPosition");
+            gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vPosition);
+
+            var cBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, 16 * maxNumVertices, gl.STATIC_DRAW);
+
+            var vColor = gl.getAttribLocation(program, "vColor");
+            gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vColor);
+
+
+            canvas.addEventListener("click", function (event) {
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+                var t = [2 * event.clientX / canvas.width - 1,
+                    2 * (canvas.height - event.clientY) / canvas.height - 1];
+                gl.bufferSubData(gl.ARRAY_BUFFER, 8 * index, new Float32Array(t));
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+                t = colors[index % 7];
+                gl.bufferSubData(gl.ARRAY_BUFFER, 16 * index, new Float32Array(t));
+                index++;
+            });
+            
+            canvas.addEventListener("touchstart", function (event) {
+
+                //for (var i = 0; i < event.targetTouches.length; i++)
+                //{
+                //    alert(event.targetTouches[0].pageX);
+                //}
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+                var t = [];
+                //either way work - pageX with targetTouches or clientX with touches
+                //t[event.targetTouches[0].pageX / canvas.width - 1,
+                // 2 * (canvas.height - event.targetTouches[0].pageY) / canvas.height - 1];
+                t = [2 * event.touches[0].clientX / canvas.width - 1,
+                2 * (canvas.height - event.touches[0].clientY) / canvas.height - 1];
+                gl.bufferSubData(gl.ARRAY_BUFFER, 8 * index, new Float32Array(t));
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+                t = colors[index % 7];
+                gl.bufferSubData(gl.ARRAY_BUFFER, 16 * index, new Float32Array(t1));
+                index++;
+            });
+
+
+        }
+
+
+        function render() {
+
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, index);
+
+            window.requestAnimationFrame(render);
+        }
+
+        function createGLContext(canvas) {
+            var names = ["webgl2", "webgl"];
+            var context = null;
+            for (var i = 0; i < names.length; i++) {
+                try {
+                    context = canvas.getContext(names[i]);
+                } catch (e) { }
+                if (context) {
+                    break;
+                }
+            }
+            if (context) {
+                context.viewportWidth = canvas.width;
+                context.viewportHeight = canvas.height;
+            } else {
+                alert("Failed to create WebGL context!");
+            }
+            return context;
+        }
+
+        function initShaders(gl, vertexShaderId, fragmentShaderId) {
+            var vertShdr;
+            var fragShdr;
+
+            var vertElem = document.getElementById(vertexShaderId);
+            if (!vertElem) {
+                alert("Unable to load vertex shader " + vertexShaderId);
+                return -1;
+            }
+            else {
+                vertShdr = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertShdr, vertElem.text);
+                gl.compileShader(vertShdr);
+                if (!gl.getShaderParameter(vertShdr, gl.COMPILE_STATUS)) {
+                    var msg = "Vertex shader failed to compile.  The error log is:"
+                        + "<pre>" + gl.getShaderInfoLog(vertShdr) + "</pre>";
+                    alert(msg);
+                    return -1;
+                }
+            }
+
+            var fragElem = document.getElementById(fragmentShaderId);
+            if (!fragElem) {
+                alert("Unable to load vertex shader " + fragmentShaderId);
+                return -1;
+            }
+            else {
+                fragShdr = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragShdr, fragElem.text);
+                gl.compileShader(fragShdr);
+                if (!gl.getShaderParameter(fragShdr, gl.COMPILE_STATUS)) {
+                    var msg = "Fragment shader failed to compile.  The error log is:"
+                        + "<pre>" + gl.getShaderInfoLog(fragShdr) + "</pre>";
+                    alert(msg);
+                    return -1;
+                }
+            }
+
+            var program = gl.createProgram();
+            gl.attachShader(program, vertShdr);
+            gl.attachShader(program, fragShdr);
+            gl.linkProgram(program);
+
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                var msg = "Shader program failed to link.  The error log is:"
+                    + "<pre>" + gl.getProgramInfoLog(program) + "</pre>";
+                alert(msg);
+                return -1;
+            }
+
+            return program;
+        }
+    </script>
+</head>
+<body>
+    <canvas id="gl-canvas" width="500" height="300"></canvas>
+    <div id="overlay">
+        Triangle: Each touch point adds another point to a triangle strip at the location of the touch point. Shows color interpolation across each triangle.
+    </div>
+</body>
+
+</html>
